@@ -22,9 +22,9 @@ public class RunEngine {
         String name = quote(file.getFileName().toString());
         String dir = quote(file.toAbsolutePath().getParent().toString());
         switch (ext) {
-            case "java": if (available("javac")) execute("cd " + dir + " && javac -d . " + name); else missing("javac", ext); break;
-            case "c": if (available("clang")) execute("cd " + dir + " && clang " + name + " -o " + quote(stem(file))); else if (available("gcc")) execute("cd " + dir + " && gcc " + name + " -o " + quote(stem(file))); else missing("clang or gcc", ext); break;
-            case "cpp": case "cc": case "cxx": if (available("clang++")) execute("cd " + dir + " && clang++ " + name + " -o " + quote(stem(file))); else if (available("g++")) execute("cd " + dir + " && g++ " + name + " -o " + quote(stem(file))); else missing("clang++ or g++", ext); break;
+            case "java": if (available("javac")) execute("cd " + dir + " && javac -d . *.java"); else missing("javac", ext); break;
+            case "c": if (available("clang")) execute("cd " + dir + " && clang *.c -o " + quote(stem(file))); else if (available("gcc")) execute("cd " + dir + " && gcc *.c -o " + quote(stem(file))); else missing("clang or gcc", ext); break;
+            case "cpp": case "cc": case "cxx": if (available("clang++")) execute("cd " + dir + " && clang++ *." + ext + " -o " + quote(stem(file))); else if (available("g++")) execute("cd " + dir + " && g++ *." + ext + " -o " + quote(stem(file))); else missing("clang++ or g++", ext); break;
             default: execute("echo 'No separate compile step for ." + ext + " files.'");
         }
     }
@@ -37,15 +37,15 @@ public class RunEngine {
             case "py": case "pyw": runIf("python3", "python3 " + path, "python " + path); break;
             case "java": if (available("javac") && available("java")) {
                 String className = javaClassName(file);
-                execute("cd " + dir + " && javac -d . " + name + " && java " + quote(className));
+                execute("cd " + dir + " && javac -d . *.java && java " + quote(className));
             } else missing("javac and java", ext); break;
-            case "c": compileThenRun(file, available("clang") ? "clang" : "gcc", "clang", "gcc"); break;
-            case "cpp": case "cc": case "cxx": compileThenRun(file, available("clang++") ? "clang++" : "g++", "clang++", "g++"); break;
+            case "c": compileThenRun(file, "*.c", available("clang") ? "clang" : "gcc", "clang", "gcc"); break;
+            case "cpp": case "cc": case "cxx": compileThenRun(file, "*." + ext, available("clang++") ? "clang++" : "g++", "clang++", "g++"); break;
             case "js": case "mjs": case "cjs": runIf("node", "node " + path); break;
             case "ts": runIf("tsx", "tsx " + path); break;
             case "rb": runIf("ruby", "ruby " + path); break;
             case "php": runIf("php", "php " + path); break;
-            case "go": runIf("go", "cd " + dir + " && go run " + name); break;
+            case "go": runIf("go", "cd " + dir + " && go run ."); break;
             case "rs": if (available("rustc")) execute("cd " + dir + " && rustc " + name + " -o " + quote(stem(file)) + " && ./" + quote(stem(file))); else missing("rustc", ext); break;
             case "swift": runIf("swift", "swift " + path); break;
             case "sh": runIf("bash", "bash " + path); break;
@@ -54,10 +54,10 @@ public class RunEngine {
         }
     }
 
-    private void compileThenRun(Path file, String compiler, String... choices) {
+    private void compileThenRun(Path file, String extPattern, String compiler, String... choices) {
         boolean found = false; for (String choice : choices) if (available(choice)) { compiler = choice; found = true; break; }
         if (!found) { missing(String.join(" or ", choices), extension(file)); return; }
-        execute("cd " + quote(file.toAbsolutePath().getParent().toString()) + " && " + compiler + " " + quote(file.getFileName().toString()) + " -o " + quote(stem(file)) + " && ./" + quote(stem(file)));
+        execute("cd " + quote(file.toAbsolutePath().getParent().toString()) + " && " + compiler + " " + extPattern + " -o " + quote(stem(file)) + " && ./" + quote(stem(file)));
     }
     private void runIf(String command, String... alternatives) {
         for (int i = 0; i < alternatives.length; i++) {
