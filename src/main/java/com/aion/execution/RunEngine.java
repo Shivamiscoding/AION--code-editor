@@ -37,7 +37,13 @@ public class RunEngine {
             case "py": case "pyw": runIf("python3", "python3 " + path, "python " + path); break;
             case "java": if (available("javac") && available("java")) {
                 String className = javaClassName(file);
-                execute("cd " + dir + " && javac -d . " + name + " && java " + quote(className));
+                String sourceRoot = findJavaSourceRoot(file);
+                if (sourceRoot != null) {
+                    String relative = java.nio.file.Paths.get(sourceRoot).relativize(file.toAbsolutePath()).toString();
+                    execute("cd " + quote(sourceRoot) + " && javac -d . " + quote(relative) + " && java " + quote(className));
+                } else {
+                    execute("cd " + dir + " && javac -d . " + name + " && java " + quote(className));
+                }
             } else missing("javac and java", ext); break;
             case "c": compileThenRun(file, "*.c", available("clang") ? "clang" : "gcc", "clang", "gcc"); break;
             case "cpp": case "cc": case "cxx": compileThenRun(file, "*." + ext, available("clang++") ? "clang++" : "g++", "clang++", "g++"); break;
