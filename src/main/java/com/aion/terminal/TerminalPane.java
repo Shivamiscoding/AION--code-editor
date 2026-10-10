@@ -25,12 +25,12 @@ public class TerminalPane extends StackPane {
     private Consumer<String> outputListener;
 
     public TerminalPane() {
-        setStyle("-fx-background-color: #17191f;");
+        setStyle("-fx-background-color: #000000;");
         output.setEditable(false);
         output.setWrapText(false);
-        output.setStyle("-fx-control-inner-background: #17191f; -fx-text-fill: #b8c5d8; -fx-font-family: monospace; -fx-font-size: 13px;");
+        output.setStyle("-fx-control-inner-background: #000000; -fx-text-fill: #f2f2f2; -fx-font-family: 'SF Mono', Menlo, Monaco, monospace; -fx-font-size: 13px;");
         input.setPromptText("Enter a shell command and press Enter");
-        input.setStyle("-fx-control-inner-background: #20232b; -fx-text-fill: #e5e9f0; -fx-font-family: monospace;");
+        input.setStyle("-fx-control-inner-background: #000000; -fx-text-fill: #f2f2f2; -fx-font-family: 'SF Mono', Menlo, Monaco, monospace; -fx-font-size: 13px;");
         BorderPane console = new BorderPane();
         console.setCenter(output);
         console.setBottom(input);
